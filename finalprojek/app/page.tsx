@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-// Tipe data untuk Buku
+// ini tipe data nya ya
 interface Book {
   id: number
   title: string
@@ -12,34 +12,34 @@ interface Book {
 }
 
 export default function Home() {
-  // READ: State untuk menyimpan daftar buku
+  // read untuk nyimpan data buku ahay
   const [books, setBooks] = useState<Book[]>([
     { id: 1, title: "Laskar Pelangi", author: "Andrea Hirata", year: "2005", status: "Tersedia" },
     { id: 2, title: "Bumi Manusia", author: "Pramoedya Ananta Toer", year: "1980", status: "Dipinjam" },
   ])
 
-  // State untuk form input
+  // untuk form input 
   const [title, setTitle] = useState("")
   const [author, setAuthor] = useState("")
   const [year, setYear] = useState("")
   
-  // State untuk melacak apakah sedang mode 'Edit' (Update)
+  // mode edit
   const [editId, setEditId] = useState<number | null>(null)
 
-  // CREATE & UPDATE: Fungsi untuk menyimpan atau mengedit buku
+  // buat update 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !author || !year) return alert("Semua kolom harus diisi!")
 
     if (editId !== null) {
-      // Proses Update
+      // proses update
       const updatedBooks = books.map((book) =>
         book.id === editId ? { ...book, title, author, year } : book
       )
       setBooks(updatedBooks)
       setEditId(null)
     } else {
-      // Proses Create
+      // create jd kalau buat masukin buku disini gitu lah 
       const newBook: Book = {
         id: Date.now(),
         title,
@@ -50,19 +50,18 @@ export default function Home() {
       setBooks([...books, newBook])
     }
 
-    // Kosongkan form setelah submit
     setTitle("")
     setAuthor("")
     setYear("")
   }
 
-  // DELETE: Fungsi menghapus buku
+  // delete buat hapus kalau mau atau ga penting
   const handleDelete = (id: number) => {
     const filteredBooks = books.filter((book) => book.id !== id)
     setBooks(filteredBooks)
   }
 
-  // Siapkan form untuk proses UPDATE
+  // form untuk update
   const handleEdit = (book: Book) => {
     setTitle(book.title)
     setAuthor(book.author)
@@ -70,7 +69,7 @@ export default function Home() {
     setEditId(book.id)
   }
 
-  // UPDATE (Status): Mengubah status ketersediaan buku
+  // update status
   const toggleStatus = (id: number) => {
     const updatedBooks = books.map((book) => {
       if (book.id === id) {
