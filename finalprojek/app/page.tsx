@@ -11,7 +11,11 @@ export default function PustakaUserCreamAesthetic() {
   // STATE BUAT PINDAH-PINDAH MENU
   const [activeMenu, setActiveMenu] = useState<"katalog" | "rak-ku" | "ulasan" | "wishlist">("katalog");
   const [searchQuery, setSearchQuery] = useState("");
-  
+
+  // [BARU #1] STATE BUAT NYIMPEN FILTER KATEGORI YANG AKTIF
+  // "Semua" = default, tampilkan semua buku tanpa filter
+  const [activeCategory, setActiveCategory] = useState("Semua");
+
   // STATE BUAT NAMPILIN POP-UP DONASI
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -25,6 +29,12 @@ export default function PustakaUserCreamAesthetic() {
     { id: 3, title: "To Kill a Mockingbird", author: "Harper Lee", category: "Fiksi", status: "Tersedia", owner: "Sistem", coverColor: "bg-[#659A6E]" }, 
     { id: 4, title: "Sapiens", author: "Yuval Noah Harari", category: "Sejarah", status: "Tersedia", owner: "Sistem", coverColor: "bg-[#8B5CF6]" }, 
     { id: 5, title: "Atomic Habits", author: "James Clear", category: "Self-Help", status: "Tersedia", owner: "Sistem", coverColor: "bg-[#EAB308]" }, 
+    { id: 6, title: "The Lean Startup", author: "Eric Ries", category: "Bisnis", status: "Tersedia", owner: "Sistem", coverColor: "bg-[#0284C7]" },
+    { id: 7, title: "Zero to One", author: "Peter Thiel", category: "Bisnis", status: "Tersedia", owner: "Sistem", coverColor: "bg-[#BE123C]" }, 
+    { id: 8, title: "Nusantara: Sejarah Indonesia", author: "Bernard H.M. Vlekke", category: "Sejarah", status: "Tersedia", owner: "Sistem", coverColor: "bg-[#7B927D]" },
+    { id: 9, title: "The Subtle Art of Not Giving a F*ck", author: "Mark Manson", category: "Self-Help", status: "Dipinjam", owner: "Sistem", coverColor: "bg-[#F87171]" },
+    { id: 10, title: "Pride and Prejudice", author: "Jane Austen", category: "Classic", status: "Tersedia", owner: "Sistem", coverColor: "bg-[#34D399]" },
+
   ]);
 
   const [wishlists, setWishlists] = useState<Wishlist[]>([
@@ -35,14 +45,21 @@ export default function PustakaUserCreamAesthetic() {
 
   const [reviews, setReviews] = useState<Review[]>([
     { id: 1, bookTitle: "Atomic Habits", reviewer: "Nadia Larasati", rating: 5, comment: "Buku ini benar-benar mengubah cara saya membangun rutinitas pagi. Sangat praktis dan mudah diaplikasikan!", date: "2 Hari yang lalu" },
-    { id: 2, title: "Bumi Manusia", bookTitle: "Bumi Manusia", reviewer: "Bima Arya", rating: 5, comment: "Karya sastra yang luar biasa. Membaca ini seperti masuk ke mesin waktu.", date: "5 Hari yang lalu" },
-    { id: 3, title: "The Great Gatsby", bookTitle: "The Great Gatsby", reviewer: "Sarah Wijaya", rating: 4, comment: "Klasik yang indah, tapi butuh waktu untuk mencerna gaya bahasanya.", date: "1 Minggu yang lalu" },
+    { id: 2, bookTitle: "Bumi Manusia", reviewer: "Bima Arya", rating: 5, comment: "Karya sastra yang luar biasa. Membaca ini seperti masuk ke mesin waktu.", date: "5 Hari yang lalu" },
+    { id: 3, bookTitle: "The Great Gatsby", reviewer: "Sarah Wijaya", rating: 4, comment: "Klasik yang indah, tapi butuh waktu untuk mencerna gaya bahasanya.", date: "1 Minggu yang lalu" },
+    { id: 4, bookTitle: "Sapiens", reviewer: "Rizky Pratama", rating: 5, comment: "Penjelasan sejarah manusia yang sangat menarik dan mudah dipahami. Wajib baca!", date: "3 Minggu yang lalu" }, 
+    { id: 5, bookTitle: "The Subtle Art of Not Giving a F*ck", reviewer: "Dewi Anggraini", rating: 4, comment: "Buku self-help yang segar dan realistis. Kadang terasa kasar, tapi itu bagian dari pesannya.", date: "1 Bulan yang lalu" }, 
+    { id: 6, bookTitle: "Pride and Prejudice", reviewer: "Fajar Nugroho", rating: 5, comment: "Sebuah mahakarya sastra yang penuh dengan karakter yang hidup dan dialog yang cerdas.", date: "2 Bulan yang lalu" }, 
   ]);
 
   // STATE BUAT NYIMPEN ISIAN FORM ULASAN
   const [reviewBookTitle, setReviewBookTitle] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
+
+  // [BARU #1] AMBIL SEMUA KATEGORI UNIK DARI DATA BUKU + TAMBAH "SEMUA" DI DEPAN
+  // Ini dinamis, jadi kalau ada buku baru didonasi, kategorinya langsung muncul di filter
+  const allCategories = ["Semua", ...Array.from(new Set(books.map(b => b.category)))];
 
   // LOGIKA CRUD-NYA DISINI
   const handleSubmitDonasi = (e: React.FormEvent) => {
@@ -76,10 +93,17 @@ export default function PustakaUserCreamAesthetic() {
     }
   };
 
-  //  FITUR PENCARIAN BUKU
+  // FITUR PENCARIAN BUKU
+  // [DIUBAH #1] Tambah filter kategori ke logika displayedBooks
+  // Urutannya: filter menu (katalog/rak-ku) → filter search → filter kategori
   const displayedBooks = books.filter(b => {
     if (activeMenu === "rak-ku") return b.status === "Dipinjam" || b.owner === "Kamu";
-    return b.title.toLowerCase().includes(searchQuery.toLowerCase()) || b.author.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchSearch = b.title.toLowerCase().includes(searchQuery.toLowerCase()) || b.author.toLowerCase().includes(searchQuery.toLowerCase());
+    // Kalau "Semua" dipilih, skip filter kategori. Kalau ada kategori spesifik, cocokkan.
+    const matchCategory = activeCategory === "Semua" || b.category === activeCategory;
+
+    return matchSearch && matchCategory;
   });
 
   return (
@@ -154,7 +178,7 @@ export default function PustakaUserCreamAesthetic() {
         
           {(activeMenu === "katalog" || activeMenu === "rak-ku") && (
             <div className="animate-in fade-in duration-300">
-              <div className="mb-8">
+              <div className="mb-6">
                 <h1 className="text-3xl font-extrabold text-stone-800 tracking-tight">
                   {activeMenu === "katalog" ? "Katalog Perpustakaan" : "Rak Pribadiku"}
                 </h1>
@@ -163,16 +187,60 @@ export default function PustakaUserCreamAesthetic() {
                 </p>
               </div>
 
+              {/* [BARU #1] FILTER PILLS — hanya tampil di halaman katalog, bukan rak-ku */}
+              {activeMenu === "katalog" && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {allCategories.map(category => (
+                    <button
+                      key={category}
+                      onClick={() => setActiveCategory(category)}
+                      // Pill aktif pakai warna hijau utama, pill lain pakai outline subtle
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                        activeCategory === category
+                          ? "bg-[#659A6E] text-white border-[#659A6E] shadow-sm"
+                          : "bg-white text-stone-500 border-stone-200 hover:border-[#659A6E] hover:text-[#659A6E]"
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              )}
+
              
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
                 {displayedBooks.length === 0 ? (
-                  <div className="col-span-full py-10 text-center text-stone-400">Wah, bukunya nggak ketemu nih.</div>
+                  // [BARU #rak-ku] Empty state beda tergantung konteks:
+                  // - Di rak-ku: ilustrasi rak kosong + CTA ke katalog
+                  // - Di katalog: pesan pencarian nggak ketemu
+                  activeMenu === "rak-ku" ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-20 text-center">
+                      {/* Ilustrasi rak buku kosong pakai SVG inline */}
+                      <svg className="w-24 h-24 text-stone-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                      </svg>
+                      <h3 className="text-base font-bold text-stone-500 mb-1">Rakmu masih kosong</h3>
+                      <p className="text-sm text-stone-400 mb-5">Belum ada buku yang kamu pinjam atau donasikan.</p>
+                      {/* Tombol CTA langsung arahkan ke halaman katalog */}
+                      <button
+                        onClick={() => setActiveMenu("katalog")}
+                        className="px-5 py-2.5 bg-[#659A6E] hover:bg-[#57855E] text-white text-sm font-bold rounded-xl shadow-sm transition-colors"
+                      >
+                        Jelajahi Katalog
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="col-span-full py-10 text-center text-stone-400">Wah, bukunya nggak ketemu nih.</div>
+                  )
                 ) : (
                   displayedBooks.map(book => (
                     <div key={book.id} className="border border-stone-200 rounded-xl bg-white overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                       <div className={`h-48 relative flex items-center justify-center p-4 text-center ${book.coverColor}`}>
                         <h4 className="text-white font-bold text-lg leading-tight opacity-95 drop-shadow-md">{book.title}</h4>
-                        <span className="absolute bottom-3 left-3 bg-white/20 backdrop-blur-md text-white text-[9px] font-bold px-2 py-1 rounded uppercase tracking-wider">
+                        {/* [DIUBAH #3] Badge genre diperbesar: padding lebih lega, font lebih besar, rounded-lg */}
+                        {/* Sebelumnya: text-[9px] px-2 py-1 rounded uppercase tracking-wider */}
+                        {/* Sekarang: text-[11px] px-3 py-1.5 rounded-lg tracking-wide — lebih mudah dibaca */}
+                        <span className="absolute bottom-3 left-3 bg-white/25 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wide">
                           {book.category}
                         </span>
                       </div>
@@ -225,13 +293,33 @@ export default function PustakaUserCreamAesthetic() {
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-stone-600 mb-1">Penilaian (Bintang)</label>
-                        <select value={reviewRating} onChange={(e) => setReviewRating(Number(e.target.value))} className="w-full bg-[#F8F6F0] border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                          <option value={5}>⭐⭐⭐⭐⭐ (Sempurna)</option>
-                          <option value={4}>⭐⭐⭐⭐ (Bagus)</option>
-                          <option value={3}>⭐⭐⭐ (Lumayan)</option>
-                          <option value={2}>⭐⭐ (Kurang)</option>
-                          <option value={1}>⭐ (Tidak Direkomendasikan)</option>
-                        </select>
+                        {/* [DIUBAH #ruang-ulasan] Ganti dropdown jadi bintang yang bisa diklik langsung */}
+                        {/* Label deskripsi di bawah bintang muncul dinamis sesuai rating yang dipilih */}
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setReviewRating(star)}
+                                className="text-2xl transition-transform hover:scale-110 focus:outline-none"
+                              >
+                                {/* Bintang filled kalau <= rating yang dipilih, kosong kalau lebih */}
+                                <span className={star <= reviewRating ? "text-amber-400" : "text-stone-300"}>
+                                  ★
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                          {/* Label deskripsi kecil di bawah bintang */}
+                          <span className="text-xs text-stone-400">
+                            {reviewRating === 1 && "Tidak Direkomendasikan"}
+                            {reviewRating === 2 && "Kurang"}
+                            {reviewRating === 3 && "Lumayan"}
+                            {reviewRating === 4 && "Bagus"}
+                            {reviewRating === 5 && "Sempurna!"}
+                          </span>
+                        </div>
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-stone-600 mb-1">Komentar</label>
@@ -326,6 +414,19 @@ export default function PustakaUserCreamAesthetic() {
               <div>
                 <label className="block text-xs font-bold text-stone-600 mb-1">Nama Penulis</label>
                 <input type="text" value={newAuthor} onChange={(e) => setNewAuthor(e.target.value)} className="w-full bg-[#F8F6F0] border border-stone-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#659A6E] outline-none" required />
+              </div>
+              {/* [BARU] Dropdown kategori — pilihannya sesuai kategori yang ada di katalog */}
+              {/* Nilai default ikut state newCategory yang sudah diset "Umum", bisa diganti user */}
+              <div>
+                <label className="block text-xs font-bold text-stone-600 mb-1">Kategori</label>
+                <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-[#F8F6F0] border border-stone-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#659A6E] outline-none">
+                  <option value="Fiksi">Fiksi</option>
+                  <option value="Classic">Classic</option>
+                  <option value="Sejarah">Sejarah</option>
+                  <option value="Self-Help">Self-Help</option>
+                  <option value="Bisnis">Bisnis</option>
+                  <option value="Umum">Umum</option>
+                </select>
               </div>
               <div className="pt-2 flex gap-3">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-sm rounded-xl transition-colors">Batal</button>
